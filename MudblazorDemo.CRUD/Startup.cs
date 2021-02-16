@@ -1,4 +1,4 @@
-using BlazorCRUD.Mudblazor.DbContexts;
+using MudblazorDemo.CRUD.DbContexts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
@@ -35,7 +35,7 @@ namespace MudblazorDemo.CRUD
             services.AddSingleton<WeatherForecastService>();
             services.AddMudServices();
             services.AddScoped<ICustomerService, CustomerService>();
-            services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("MudblazorDemos")));
+            services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("MudblazorDemo")));
             services.AddControllersWithViews();
         }
 

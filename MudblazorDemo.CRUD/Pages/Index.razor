@@ -1,7 +1,92 @@
 ﻿@page "/"
 
-<h1>Hello, world!</h1>
+@using MudblazorDemo.CRUD.Data
+@inject MudblazorDemo.CRUD.Services.ICustomerService customerService
+@inject MudBlazor.ISnackbar snackBar
 
-Welcome to your new app.
+<MudCard Elevation="25">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">Add / Edit Customers</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudTextField @bind-Value="customer.FirstName" Label="First Name" Variant="Variant.Text" Margin="Margin.Normal"></MudTextField>
+        <MudTextField @bind-Value="customer.LastName" Label="Last Name" Variant="Variant.Text" Margin="Margin.Normal"></MudTextField>
+        <MudTextField @bind-Value="customer.PhoneNumber" Label="Phone Number" Variant="Variant.Text" Margin="Margin.Normal"></MudTextField>
+        <br />
+        <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="Save">Save Customer</MudButton>
+    </MudCardContent>
+</MudCard>
+<br />
+<MudTable Elevation="25" Items="GetCustomers()" Filter="new Func<Customer, bool>(Search)" @bind-customer="customer">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Customers</MudText>
+        <MudToolBarSpacer />
+        <MudTextField @bind-Value="searchString" Placeholder="Search for Customers..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>First Name</MudTh>
+        <MudTh>Last Name</MudTh>
+        <MudTh>Phone Number</MudTh>
+        <MudTh>Actions</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Id">@context.Id</MudTd>
+        <MudTd DataLabel="FirstName">@context.FirstName</MudTd>
+        <MudTd DataLabel="LastName">@context.LastName</MudTd>
+        <MudTd DataLabel="PhoneNumber">@context.PhoneNumber</MudTd>
+        <MudTd DataLabel="">
+            <MudFab @onclick="@(()=>Edit(@context.Id))" Color="Color.Primary" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" IconSize="Size.Small" />
+            <MudFab @onclick="@(()=>Delete(@context.Id))" Color="Color.Secondary" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" IconSize="Size.Small" />
+        </MudTd>
+    </RowTemplate>
+</MudTable>
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+@code{
+    private bool hover = false;
+    private string searchString = "";
+
+    private Customer customer = new Customer();
+    private List<Customer> customers = new List<Customer>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        GetCustomers();
+    }
+
+    private List<Customer> GetCustomers()
+    {
+        customers = customerService.GetCustomers();
+        return customers;
+    }
+    private bool Search(Customer customer)
+    {
+        if (string.IsNullOrWhiteSpace(searchString)) return true;
+        if (customer.FirstName.Contains(searchString, StringComparison.OrdinalIgnoreCase)
+            || customer.LastName.Contains(searchString, StringComparison.OrdinalIgnoreCase)
+            || customer.PhoneNumber.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    private void Save()
+    {
+        customerService.SaveCustomer(customer);
+        customer = new Customer();
+        snackBar.Add("Customer Saved.", Severity.Success);
+        GetCustomers();
+    }
+    private void Edit(int id)
+    {
+        customer = customers.FirstOrDefault(c => c.Id == id);
+    }
+    private void Delete(int id)
+    {
+        customerService.DeleteCustomer(id);
+        snackBar.Add("Customer Deleted.", Severity.Success);
+        GetCustomers();
+    }
+}
